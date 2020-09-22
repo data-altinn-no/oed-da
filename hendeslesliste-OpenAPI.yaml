@@ -1,0 +1,115 @@
+openapi: 3.0.0
+servers:
+    - url: /domstol/api
+info:
+  description: Domstolene sitt hendelses-API som eksponerer hendelser knyttet til livssyklusen til en sak
+  version: 0.1.0
+  title: Hendelses-API
+tags:
+  - name: maskinporten
+    description: API som krever Maskinporten-autentisering
+paths:
+  /v1/hendelser/sistesekvensnummer:
+    get:
+      tags:
+        - maskinporten
+      summary: Returnerer sekvensnummeret til den siste hendelsen i listen 
+      operationId: sisteSekvensnummer
+      responses:
+        '200':
+          description: Returnerer det siste sekvensnummeret tilgjengelig i listen.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SekvensNummerResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Not Authorised
+        '500':
+          description: Server Error
+  /v1/hendelser/feed:
+    get:
+      tags:
+        - maskinporten
+      summary: Returnerer en liste med hendelser som har skjedd fra og med {sekvensNummer}
+      operationId: hentHendelser
+      parameters:
+        - in: query
+          name: sekvensNummer
+          description: Sekvensnummer klienten ønsker å begynne henting av hendelser fra.
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Liste med hendelser. Tom liste hvis ingen hendelser finnes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HendelsesListeResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Not Authorised
+        '500':
+          description: Server Error
+components:
+  schemas:
+    SekvensNummerResponse:
+      type: object
+      properties:
+        sekvensnummer:
+          $ref: '#/components/schemas/SekvensNummer'
+    HendelsesListeResponse:
+      type: array
+      items: 
+        $ref: '#/components/schemas/HendelsesListeItem'
+      example:
+        - sekvensnummer: 100
+          hendelse: 
+            hendelsestype: 'sakRegistrert'
+            sakstype: 'doedsfallsbehandling'
+            saksId: 'a7528411-548d-4567-ad11-3a6cebd0dff4'
+            endringstidspunkt: '2020-04-01T12:34:33+02:00'
+        - sekvensnummer: 101
+          hendelse: 
+            hendelsestype: 'partRegistrert'
+            sakstype: 'doedsfallsbehandling'
+            saksId: '33d96253-42bb-4221-a2de-a7a330f00f64'
+            endringstidspunkt: '2020-04-02T11:42:08+02:00'
+        - sekvensnummer: 102
+          hendelse: 
+            hendelsestype: 'sakAvsluttet'
+            sakstype: 'doedsfallsbehandling'
+            saksId: '49a1b77a-0312-4e77-8ded-dce73e6db72f'
+            endringstidspunkt: '2020-03-30T14:48:07+02:00'
+    HendelsesListeItem:
+      type: object
+      properties:
+        sekvensnummer:
+          $ref: '#/components/schemas/SekvensNummer'
+        hendelse:
+          $ref: '#/components/schemas/Hendelse'
+    SekvensNummer:
+          type: integer
+          format: int64
+          example: 1567700
+    Hendelse:
+      type: object
+      properties:
+        hendelsestype:
+          type: string
+          example: 'sakRegistrert'
+        sakstype:
+          type: string
+          example: 'doedsfallsbehandling'
+        saksid:
+          type: string
+          format: uuid
+          example: '4d077619-6704-40da-bb2b-93836511a4e5'
+        endringstidspunkt:
+          type: string
+          format: date-time
+          example: '2020-03-30T14:48:07+02:00'
