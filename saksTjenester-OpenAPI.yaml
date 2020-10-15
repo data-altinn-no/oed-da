@@ -1,0 +1,148 @@
+openapi: 3.0.0
+servers:
+    - url: /domstol/api
+info:
+  description: Domstolene sitt saks-API som eksponerer informasjon om saker og tilhørende ressurser
+  version: 0.1.0
+  title: Saks-API
+tags:
+  - name: maskinporten
+    description: API som krever Maskinporten-autentisering
+paths:
+  /v1/saker/{sakId}:
+    parameters:
+      - in: path
+        name: sakId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - maskinporten
+      summary: Returnerer høyt nivå informasjon om en sak
+      operationId: hentSak
+      responses:
+        '200':
+          description: Returnerer saken
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sak'
+        '400':
+          description: Bad Request
+        '401':
+          description: Not Authorised
+        '500':
+          description: Server Error
+
+  /v1/saker/{sakId}/parter:
+    parameters:
+      - in: path
+        name: sakId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - maskinporten
+      summary: Returnerer en liste med parter knyttet til saken med {sakId}
+      operationId: hentParter
+      responses:
+        '200':
+          description: Liste med parter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartList'
+        '400':
+          description: Bad Request
+        '401':
+          description: Not Authorised
+        '500':
+          description: Server Error
+  /v1/saker/{sakId}/parter/{partId}:
+    parameters:
+      - in: path
+        name: sakId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: partId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - maskinporten
+      summary: Returnerer en bestemt part
+      operationId: hentPart
+      responses:
+        '200':
+          description: Part ressurs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Part'
+        '400':
+          description: Bad Request
+        '401':
+          description: Not Authorised
+        '500':
+          description: Server Error
+
+components:
+  schemas:
+    Sak:
+      type: object
+      properties:
+        sakstype:
+          type: string
+          example: 'doedsfallsbehandling'
+        saksid:
+          type: string
+          format: uuid
+          example: '4d077619-6704-40da-bb2b-93836511a4e5'
+        parter:
+            $ref: '#/components/schemas/PartList'
+    PartList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Part'
+      example:
+        - id: '23448866-cc35-4477-b50d-f7a8ec18d3b2'
+          rolle: 'avdoede'
+          foedselsnummer: '14059501152'
+          navn: 'Stian Marstein'
+        - id: 'd961b817-6fd6-4812-b6f4-7a7aa810f53e'
+          rolle: 'arving_fulle_rettigheter'
+          foedselsnummer: '18076603207'
+          navn: 'Haakon Marstein'
+        - id: '12f7846c-1461-4854-b41d-e932b605a372'
+          rolle: 'arving_begrensede_rettigheter'
+          foedselsnummer: '18076603207'
+          navn: 'Else Viktoria Langhelle'
+        - id: '67645aed-2e66-4fb9-8d44-c4d024635a38'
+          rolle: 'annen_rolle'
+          foedselsnummer: '26066202029'
+          navn: 'Marita Veronica Skogli'
+    Part:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '4d09319-6704-40da-bb2b-93836511a4e5'
+        rolle:
+          type: string
+          example: 'avdoede'
+        foedselsnummer:
+          type: string
+          example: '14059501152'
+        navn:
+          type: string
+          example: 'Kent Adrian Tveite'
